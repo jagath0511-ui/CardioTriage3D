@@ -36,3 +36,9 @@ Thumbs.db
 # Vercel
 .vercel
 
+
+*.mp4
+*.mp3
+*.wav
+videos_dir/
+
