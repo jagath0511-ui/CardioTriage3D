@@ -916,6 +916,7 @@ function applyClinicalUIPolish() {
   // 1. Round any raw floating point numbers (e.g., 26.122448979591837 -> 26.1)
   document.querySelectorAll('span, div, label, strong, b').forEach((el) => {
     if (el.children.length === 0 && el.textContent) {
+      if (el.closest('#metrics-modal')) return; // Preserve rigorous 4-decimal CV table metrics (e.g. 0.9085)
       const txt = el.textContent.trim();
       // Match raw decimals with more than 2 decimal places
       if (/^-?\d+\.\d{3,}(\s*[a-zA-Z/%²]*)?$/.test(txt)) {
