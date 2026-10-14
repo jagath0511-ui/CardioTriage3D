@@ -220,3 +220,4 @@ CardioTriage 3D bridges the chasm between raw tabular machine learning and clini
 2. Patel, M. R., et al. (2010). "Low diagnostic yield of elective coronary angiography." *New England Journal of Medicine*, 362(10), 886–895.
 3. Lundberg, S. M., & Lee, S.-I. (2017). "A unified approach to interpreting model predictions." *Advances in Neural Information Processing Systems (NeurIPS)*, 4765–4774.
 4. Chen, T., & Guestrin, C. (2016). "XGBoost: A scalable tree boosting system." *ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, 785–794.
+

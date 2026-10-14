@@ -312,21 +312,20 @@
         // Numeric slider
         const sliderRow = document.createElement("div");
         sliderRow.className = "feature-slider-row";
-        const minVal = meta.min;
-        const maxVal = meta.max;
-        const step = (maxVal - minVal) <= 10 ? "0.1" : "1";
+        const minVal = Number.isInteger(meta.min) ? meta.min : Number(meta.min).toFixed(1);
+        const maxVal = Number.isInteger(meta.max) ? meta.max : Number(meta.max).toFixed(1);
+        const step = (meta.max - meta.min) <= 10 ? "0.1" : "1";
 
         sliderRow.innerHTML = `
           <span class="feature-meta-minmax">${minVal}</span>
-          <input type="range" class="feature-slider" data-feature="${fname}" id="slider-${fname}" name="${fname}" min="${minVal}" max="${maxVal}" step="${step}" value="${currentVal}">
+          <input type="range" class="feature-slider" data-feature="${fname}" id="slider-${fname}" name="${fname}" min="${meta.min}" max="${meta.max}" step="${step}" value="${currentVal}">
           <span class="feature-meta-minmax">${maxVal}</span>
         `;
         const slider = sliderRow.querySelector(".feature-slider");
         slider.addEventListener("input", (e) => {
           const val = Number(e.target.value);
           state.currentFeatures[fname] = val;
-          const displayVal = (String(val).includes(".") ? val.toFixed(1) : val);
-          document.getElementById(`val-badge-${fname}`).textContent = `${displayVal} ${meta.unit}`.trim();
+          document.getElementById(`val-badge-${fname}`).textContent = formatDisplayVal(fname, val, meta);
           debouncePredict();
         });
         row.appendChild(sliderRow);
@@ -337,21 +336,27 @@
   }
 
   function formatDisplayVal(fname, val, meta) {
-    if (fname.toLowerCase() === "sex" || (meta && meta.label && meta.label.toLowerCase().includes("sex"))) {
+    const isSex = fname.toLowerCase() === "sex" || (meta && meta.label && meta.label.toLowerCase().includes("sex"));
+    if (isSex) {
       return Number(val) === 1 ? "Male" : "Female";
     }
-    if (meta.type === "binary") {
+    if (meta && meta.type === "binary") {
       return Number(val) === 1 ? "Yes" : "No";
     }
-    if (meta.options) {
+    if (meta && meta.options && meta.options.length > 0) {
       const match = meta.options.find(o => o.value === Number(val));
-      return match ? match.label : String(val);
+      if (match) return match.label;
     }
     const num = Number(val);
-    if (!isNaN(num) && String(val).includes(".")) {
-      return `${num.toFixed(1)} ${meta.unit || ''}`.trim();
+    if (!isNaN(num)) {
+      const displayNum = Number.isInteger(num) ? num : Number(num.toFixed(1));
+      let unit = (meta && meta.unit) || "";
+      if (fname === "BMI" || unit.startsWith("kg/m") || unit.includes("\ufffd")) {
+        unit = "kg/m²";
+      }
+      return `${displayNum} ${unit}`.trim();
     }
-    return `${val} ${meta.unit || ''}`.trim();
+    return `${val} ${(meta && meta.unit) || ''}`.trim();
   }
 
   function debouncePredict() {

@@ -7,3 +7,4 @@ tests/
 scratch/
 backend/__pycache__
 data/*.xlsx
+

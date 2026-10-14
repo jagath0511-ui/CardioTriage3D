@@ -16,6 +16,71 @@
  * 7. Real-Time Blood-Flow Particles & PR/EF-TTE Synced Ventricular Contraction.
  */
 
+// === DROP-IN 3D ANATOMICAL & CAMERA FIXES FOR `frontend/heart3d.js` ===
+
+// Preset Cath-Lab Projections (AP, LAO, RAO) with un-clipped distance:
+const CATH_VIEWS = {
+  AP:  { pos: [0, 0.35, 7.6],    target: [0, 0.25, 0] },
+  LAO: { pos: [4.8, 0.85, 5.8],  target: [0, 0.25, 0] }, // Left Anterior Oblique (40° LAO, 15° Cranial)
+  RAO: { pos: [-4.6, 0.30, 5.9], target: [0, 0.25, 0] }  // Right Anterior Oblique (35° RAO)
+};
+
+// 2. REPLACE FLAT BLUE PVC CYLINDER WITH SMOOTH PULMONARY ARTERY SPLINE
+function createPulmonaryTrunk(THREE) {
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.18, 0.55, 0.65),
+    new THREE.Vector3(0.05, 1.15, 0.52),
+    new THREE.Vector3(-0.35, 1.48, 0.20),
+    new THREE.Vector3(-0.85, 1.52, -0.15)
+  ]);
+  const geo = new THREE.TubeGeometry(curve, 48, 0.26, 24, false);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0x2563eb,
+    roughness: 0.38,
+    metalness: 0.08,
+    clearcoat: 0.4,
+    clearcoatRoughness: 0.25
+  });
+  return new THREE.Mesh(geo, mat);
+}
+
+// 3. REPLACE BULKY PINK TORUS "DONUTS" WITH SLEEK GLOWING STENOSIS CUFFS
+// Instead of new THREE.TorusGeometry(0.22, 0.08, ...), use a tight axial vascular cuff:
+function createStenosisCuff(THREE, pointOnCurve, tangentVector, severityProb) {
+  const group = new THREE.Group();
+
+  // Inner dark-crimson plaque core (hugs the artery wall tightly)
+  const coreGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.22, 24, 1, false);
+  const coreMat = new THREE.MeshPhysicalMaterial({
+    color: severityProb >= 0.5 ? 0xdc2626 : 0xf59e0b,
+    emissive: severityProb >= 0.5 ? 0x991b1b : 0xb45309,
+    emissiveIntensity: 0.85,
+    roughness: 0.25,
+    clearcoat: 0.6
+  });
+  const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+  group.add(coreMesh);
+
+  // Subtle translucent outer Halo (shows inflammation/ischemic focal zone without looking like a donut)
+  const haloGeo = new THREE.CylinderGeometry(0.115, 0.115, 0.28, 24, 1, true);
+  const haloMat = new THREE.MeshBasicMaterial({
+    color: severityProb >= 0.5 ? 0xef4444 : 0xfbbf24,
+    transparent: true,
+    opacity: 0.32,
+    side: THREE.DoubleSide,
+    depthWrite: false
+  });
+  const haloMesh = new THREE.Mesh(haloGeo, haloMat);
+  group.add(haloMesh);
+
+  // Align cylinder along the exact artery tangent vector
+  group.position.copy(pointOnCurve);
+  const up = new THREE.Vector3(0, 1, 0);
+  group.quaternion.setFromUnitVectors(up, tangentVector.clone().normalize());
+
+  return group;
+}
+
 class Heart3DViewer {
   constructor() {
     this.container = null;
@@ -28,8 +93,6 @@ class Heart3DViewer {
 
     // Scene groups
     this.rootGroup = new THREE.Group();
-    this.proceduralHeartGroup = new THREE.Group();
-    this.loadedHeartGroup = new THREE.Group();
     this.ventriclesGroup = new THREE.Group();
     this.atriaGroup = new THREE.Group();
     this.greatVesselsGroup = new THREE.Group();
@@ -46,11 +109,6 @@ class Heart3DViewer {
     this.flowParticles = [];
     this.ventricleMesh = null;
     this.myocardialMat = null;
-    this.loadedHeartMesh = null;
-    this.isModelLoaded = false;
-
-    // Attach global reference for inspector/debug
-    window.cardioViewer = this;
 
     // Physiology State
     this.pulseRate = 75; // BPM
@@ -88,9 +146,12 @@ class Heart3DViewer {
     this.scene.background = new THREE.Color(0x070b14); // Dark Cath-Lab cockpit background
     this.scene.fog = new THREE.FogExp2(0x070b14, 0.035);
 
-    // 2. Camera
-    this.camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    this.camera.position.set(0, 0.2, 5.4);
+    // 2. FIX CAMERA FRAMING (Prevents Aortic Arch Clipping at Top of Canvas)
+    this.camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+    const camera = this.camera;
+    camera.fov = 38;
+    camera.position.set(0, 0.35, 7.6); // Pulled back from ~5.5 to 7.6 so full aorta & apex fit
+    camera.updateProjectionMatrix();
 
     // 3. Renderer with high dynamic range ACES Filmic tonemapping
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
@@ -105,12 +166,16 @@ class Heart3DViewer {
     // 4. OrbitControls
     if (THREE.OrbitControls) {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-      this.controls.enableDamping = true;
-      this.controls.dampingFactor = 0.06;
-      this.controls.minDistance = 2.4;
-      this.controls.maxDistance = 8.5;
-      this.controls.maxPolarAngle = Math.PI * 0.88;
-      this.controls.target.set(0, -0.15, 0);
+      const controls = this.controls;
+      if (controls) {
+        controls.target.set(0, 0.25, 0); // Centered slightly higher to balance top vessels
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.minDistance = 4.2;
+        controls.maxDistance = 12.0;
+        controls.maxPolarAngle = Math.PI * 0.88;
+        controls.update();
+      }
     }
 
     // 5. Professional 3-Point Medical Studio Lighting Setup
@@ -365,30 +430,17 @@ class Heart3DViewer {
     this.greatVesselsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(lscCurve, 12, 0.08, 12, false), aortaMat));
 
     // --- MAIN PULMONARY TRUNK & BIFURCATION ---
-    // Emerges from RV conus anterior to aorta, crossing leftwards
-    const paCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.28, 0.65, 0.48),  // Pulmonary valve orifice
-      new THREE.Vector3(0.12, 1.05, 0.32),  // Crossing anterior to aorta
-      new THREE.Vector3(-0.25, 1.25, 0.05)  // Bifurcation crux
-    ]);
-    const paGeo = new THREE.TubeGeometry(paCurve, 24, 0.22, 16, false);
-    const paMesh = new THREE.Mesh(paGeo, pulmonaryMat);
+    // 2. REPLACE FLAT BLUE PVC CYLINDER WITH SMOOTH PULMONARY ARTERY SPLINE
+    const paMesh = createPulmonaryTrunk(THREE);
     this.greatVesselsGroup.add(paMesh);
-
-    // Left Pulmonary Artery
-    const lpaCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.25, 1.25, 0.05),
-      new THREE.Vector3(-0.68, 1.28, -0.22)
-    ]);
-    this.greatVesselsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(lpaCurve, 14, 0.13, 12, false), pulmonaryMat));
 
     // Right Pulmonary Artery (runs under aortic arch)
     const rpaCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.25, 1.25, 0.05),
-      new THREE.Vector3(0.18, 1.22, -0.25),
-      new THREE.Vector3(0.65, 1.15, -0.32)
+      new THREE.Vector3(-0.35, 1.48, 0.20),
+      new THREE.Vector3(0.18, 1.35, -0.15),
+      new THREE.Vector3(0.68, 1.20, -0.25)
     ]);
-    this.greatVesselsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(rpaCurve, 16, 0.14, 12, false), pulmonaryMat));
+    this.greatVesselsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(rpaCurve, 18, 0.14, 14, false), paMesh.material));
 
     // --- SUPERIOR VENA CAVA (SVC) ---
     const svcCurve = new THREE.CatmullRomCurve3([
@@ -540,34 +592,35 @@ class Heart3DViewer {
     };
     this.coronaryGroup.add(vesselGroup);
 
-    // Create 3D Torus Stenosis Constriction Plaque Ring (pulsing when risk is elevated)
+    // 3. Create 3D Stenosis Constriction Plaque Cuff (pulsing when risk is elevated)
     this.createPlaqueRing(targetKey, mainCurve);
   }
 
   createPlaqueRing(targetKey, curve) {
-    // Critical proximal lesion sites (e.g. 26% along proximal course)
+    // Critical proximal lesion sites (e.g. 24-30% along proximal course)
     const t = targetKey === "LAD" ? 0.24 : (targetKey === "LCX" ? 0.30 : 0.26);
     const point = curve.getPointAt(t);
     const tangent = curve.getTangentAt(t);
 
-    const torusGeo = new THREE.TorusGeometry(0.14, 0.048, 16, 28);
-    const torusMat = new THREE.MeshStandardMaterial({
-      color: 0xff1e1e,
-      emissive: 0xef4444,
-      emissiveIntensity: 1.2,
-      roughness: 0.15,
-      metalness: 0.6
-    });
+    const cuff = createStenosisCuff(THREE, point, tangent, 0.5);
+    cuff.renderOrder = 15;
+    cuff.visible = false; // toggled on when stenosis risk >= threshold
+    cuff.userData = {
+      target: targetKey,
+      updateSeverity: (prob) => {
+        const isSevere = prob >= 0.5;
+        if (cuff.children[0] && cuff.children[0].material) {
+          cuff.children[0].material.color.setHex(isSevere ? 0xdc2626 : 0xf59e0b);
+          cuff.children[0].material.emissive.setHex(isSevere ? 0x991b1b : 0xb45309);
+        }
+        if (cuff.children[1] && cuff.children[1].material) {
+          cuff.children[1].material.color.setHex(isSevere ? 0xef4444 : 0xfbbf24);
+        }
+      }
+    };
 
-    const torusMesh = new THREE.Mesh(torusGeo, torusMat);
-    torusMesh.position.copy(point);
-    torusMesh.lookAt(point.clone().add(tangent));
-    torusMesh.renderOrder = 15;
-    torusMesh.visible = false; // toggled on when stenosis risk >= threshold
-    torusMesh.userData = { target: targetKey };
-
-    this.plaqueGroup.add(torusMesh);
-    this.plaqueMeshes[targetKey] = torusMesh;
+    this.plaqueGroup.add(cuff);
+    this.plaqueMeshes[targetKey] = cuff;
   }
 
   // =========================================================================
@@ -692,9 +745,12 @@ class Heart3DViewer {
         vessel.material.emissiveIntensity = emissiveIntensity;
       }
 
-      // Plaque constriction ring visibility
+      // Plaque constriction cuff visibility & severity color
       if (plaque) {
         plaque.visible = prob >= threshold;
+        if (plaque.userData && typeof plaque.userData.updateSeverity === "function") {
+          plaque.userData.updateSeverity(prob);
+        }
       }
 
       // Flow particle speed (slows down proportionally as stenosis probability increases)
@@ -745,22 +801,13 @@ class Heart3DViewer {
   setCameraView(viewName) {
     if (!this.camera || !this.controls) return;
 
-    if (viewName === "ap") {
-      this.camera.position.set(0, 0.2, 5.4);
-      this.controls.target.set(0, -0.15, 0);
-    } else if (viewName === "lao") {
-      // Left Anterior Oblique (LAD & LCX bifurcation profile)
-      this.camera.position.set(-3.8, 1.1, 3.8);
-      this.controls.target.set(-0.25, -0.2, 0);
-    } else if (viewName === "rao") {
-      // Right Anterior Oblique (RCA C-shape curve profile)
-      this.camera.position.set(3.8, 0.8, 3.6);
-      this.controls.target.set(0.3, -0.2, 0);
-    } else if (viewName === "reset") {
-      this.camera.position.set(0, 0.2, 5.4);
-      this.controls.target.set(0, -0.15, 0);
+    const key = (viewName || "").toUpperCase();
+    const config = CATH_VIEWS[key] || (key === "RESET" ? CATH_VIEWS.AP : null);
+    if (config) {
+      this.camera.position.set(...config.pos);
+      this.controls.target.set(...config.target);
+      this.controls.update();
     }
-    this.controls.update();
   }
 
   setLayerVisibility(layer, isVisible) {

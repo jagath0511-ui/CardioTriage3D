@@ -1876,3 +1876,177 @@ body {
     transform: translateY(0) scale(1);
   }
 }
+
+/* === FINAL CATH-LAB UI POLISH OVERRIDES === */
+
+/* 1. Responsive Header - Prevent clipping on 1366px-1680px screens */
+header, .app-header, .top-bar, .navbar, .cockpit-header {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 5px 12px !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+@media (max-width: 1680px) {
+  .brand-subtitle {
+    display: none !important;
+  }
+}
+
+.header-left, .header-center, .header-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.preset-dropdown {
+  min-width: 200px !important;
+  max-width: 240px !important;
+  font-size: 11px !important;
+  padding: 4px 6px !important;
+}
+
+header button, .app-header button, .top-bar button, .cockpit-header button,
+header select, .app-header select, .top-bar select, .cockpit-header select {
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* 2. Compact Right Column Triage, Coherence, & Risk Cards */
+.col-right, .triage-panel, .right-panel, .right-column, #right-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 8px 10px !important;
+  overflow-y: auto !important;
+}
+
+#triage-recommendation-card.triage-card {
+  padding: 6px 10px !important;
+  gap: 4px !important;
+  margin-bottom: 2px !important;
+}
+
+.triage-header {
+  margin-bottom: 2px !important;
+}
+
+.triage-badge {
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+}
+
+.triage-threshold-indicator {
+  font-size: 10px !important;
+}
+
+.triage-action-title {
+  font-size: 12.5px !important;
+  line-height: 1.2 !important;
+  margin: 1px 0 2px 0 !important;
+}
+
+.triage-action-desc {
+  font-size: 10.5px !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+}
+
+.coherence-box {
+  padding: 5px 8px !important;
+  gap: 3px !important;
+  margin-top: 2px !important;
+  border-radius: 5px !important;
+}
+
+.coherence-title {
+  font-size: 9.5px !important;
+}
+
+.coherence-status-chip {
+  font-size: 9px !important;
+  padding: 1px 5px !important;
+}
+
+.coherence-math {
+  font-size: 11px !important;
+  padding: 1px 0 !important;
+  gap: 6px !important;
+}
+
+.coherence-formula-note {
+  font-size: 9px !important;
+  line-height: 1.1 !important;
+}
+
+.coherence-explanation {
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+/* 3. Compress the 2x2 Vessel Risk Grid (Overall CAD, LAD, LCX, RCA) */
+.risk-cards-grid, .vessel-risk-grid, .risk-grid {
+  gap: 5px !important;
+  margin-bottom: 2px !important;
+}
+
+.risk-card, .vessel-risk-card {
+  padding: 5px 8px !important;
+  min-height: 52px !important;
+}
+
+.risk-card-header {
+  font-size: 10.5px !important;
+}
+
+.risk-prob-value {
+  font-size: 17px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+}
+
+.risk-tier-badge {
+  font-size: 9px !important;
+  padding: 1px 4px !important;
+}
+
+/* 4. Ensure SHAP Attribution Container Expands & Shows Top 5-6 Bars Clearly */
+.shap-container, .shap-explanation-panel, .shap-panel {
+  flex: 1 1 auto !important;
+  min-height: 210px !important;
+  padding: 6px 10px !important;
+}
+
+.shap-header {
+  margin-bottom: 4px !important;
+}
+
+.shap-bar-row {
+  margin-bottom: 3px !important;
+}
+
+.shap-feat-name {
+  font-size: 10.5px !important;
+}
+
+.shap-feat-val {
+  font-size: 9.5px !important;
+}
+
+/* 5. Fix Long Unformatted Float Badge Overflow in Left Console */
+.feature-value-badge, .value-badge, .param-value, .slider-val {
+  max-width: 95px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+  font-size: 11px !important;
+}
+

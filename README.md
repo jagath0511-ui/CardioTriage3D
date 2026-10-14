@@ -132,8 +132,8 @@ CardioTriage3D/
 
 ### 1. Clone Repository & Setup Virtual Environment
 ```bash
-git clone https://github.com/your-username/cardiotriage-3d.git
-cd cardiotriage-3d
+git clone https://github.com/jagath0511-ui/CardioTriage3D.git
+cd CardioTriage3D
 
 python -m venv venv
 # Windows:
@@ -183,3 +183,4 @@ http://localhost:8000
 **CardioTriage 3D** is developed strictly for **clinical decision support, research evaluation, and educational demonstration** within the scope of the Multimodal AI Hackathon 2026. 
 
 Predictions are statistical probability estimates derived from historical cohort data ($N=303$) and **must never replace formal diagnostic coronary angiography, computed tomography coronary angiography (CCTA), or the professional judgment of a board-certified cardiologist**.
+

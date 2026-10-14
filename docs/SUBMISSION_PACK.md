@@ -3,7 +3,7 @@
 > **Multimodal AI Hackathon 2026**  
 > **Track:** Track A — Cardiovascular Risk Visualization & Prediction  
 > **Author & Project Lead:** Gutta Jagath Chowdary (Aditya University)  
-> **Repository:** `https://github.com/your-username/cardiotriage-3d`  
+> **Repository:** `https://github.com/jagath0511-ui/CardioTriage3D`  
 > **Live Web Application:** `https://cardio-triage3-d.vercel.app` (or local `http://localhost:8000`)
 
 ---
@@ -145,3 +145,4 @@ We set out to build an end-to-end, clinically grounded platform that combines no
 
 ### 11. Technology Stack Tags
 `Python` • `FastAPI` • `XGBoost` • `TreeSHAP` • `Three.js` • `WebGL` • `Scikit-Learn` • `Pandas` • `NumPy` • `Vercel` • `Healthcare AI` • `Cardiovascular Risk` • `Digital Twin`
+
