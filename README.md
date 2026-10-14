@@ -3,7 +3,7 @@
 > **Submission for Multimodal AI Hackathon 2026 (Track A: Cardiovascular Risk Visualization & Prediction)**  
 > **Author & Lead Engineer:** Gutta Jagath Chowdary (Aditya University)  
 > **Clinical Cohort:** UCI Machine Learning Repository — Extension of Z-Alizadeh Sani Cohort (ID #411, $N=303$, 54 Features)  
-> **Live Workstation URL:** [https://cardio-triage3-d.vercel.app](https://cardio-triage3-d.vercel.app) *(or local `http://localhost:8000`)*
+> **Live Workstation URL:** [https://cardiotriage-3d.onrender.com](https://cardiotriage-3d.onrender.com) *(or local `http://localhost:8000`)*
 
 ---
 

@@ -4,7 +4,7 @@
 > **Track:** Track A — Cardiovascular Risk Visualization & Prediction  
 > **Author & Project Lead:** Gutta Jagath Chowdary (Aditya University)  
 > **Repository:** `https://github.com/jagath0511-ui/CardioTriage3D`  
-> **Live Web Application:** `https://cardio-triage3-d.vercel.app` (or local `http://localhost:8000`)
+> **Live Web Application:** [https://cardiotriage-3d.onrender.com](https://cardiotriage-3d.onrender.com) (or local `http://localhost:8000`)
 
 ---
 
