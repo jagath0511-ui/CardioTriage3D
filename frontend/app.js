@@ -273,9 +273,13 @@
         const binGroup = document.createElement("div");
         binGroup.className = "binary-toggle-group";
         const isYes = Number(currentVal) === 1;
+        const isSex = fname.toLowerCase() === "sex" || (meta.label && meta.label.toLowerCase().includes("sex"));
+        const posLabel = isSex ? "Male" : "Yes";
+        const negLabel = isSex ? "Female" : "No";
+
         binGroup.innerHTML = `
-          <button type="button" class="binary-btn ${isYes ? 'active' : ''}" data-val="1">Yes</button>
-          <button type="button" class="binary-btn ${!isYes ? 'active' : ''}" data-val="0">No</button>
+          <button type="button" class="binary-btn ${isYes ? 'active' : ''}" data-val="1">${posLabel}</button>
+          <button type="button" class="binary-btn ${!isYes ? 'active' : ''}" data-val="0">${negLabel}</button>
         `;
         binGroup.querySelectorAll(".binary-btn").forEach(btn => {
           btn.addEventListener("click", () => {
@@ -283,7 +287,7 @@
             state.currentFeatures[fname] = val;
             binGroup.querySelectorAll(".binary-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            document.getElementById(`val-badge-${fname}`).textContent = val === 1 ? "Yes" : "No";
+            document.getElementById(`val-badge-${fname}`).textContent = val === 1 ? posLabel : negLabel;
             debouncePredict();
           });
         });
@@ -291,6 +295,9 @@
       } else if (meta.options && meta.options.length > 0) {
         const select = document.createElement("select");
         select.className = "cat-select";
+        select.dataset.feature = fname;
+        select.id = `select-${fname}`;
+        select.name = fname;
         select.innerHTML = meta.options.map(opt => `
           <option value="${opt.value}" ${Number(currentVal) === opt.value ? 'selected' : ''}>${opt.label}</option>
         `).join("");
@@ -311,14 +318,15 @@
 
         sliderRow.innerHTML = `
           <span class="feature-meta-minmax">${minVal}</span>
-          <input type="range" class="feature-slider" min="${minVal}" max="${maxVal}" step="${step}" value="${currentVal}">
+          <input type="range" class="feature-slider" data-feature="${fname}" id="slider-${fname}" name="${fname}" min="${minVal}" max="${maxVal}" step="${step}" value="${currentVal}">
           <span class="feature-meta-minmax">${maxVal}</span>
         `;
         const slider = sliderRow.querySelector(".feature-slider");
         slider.addEventListener("input", (e) => {
           const val = Number(e.target.value);
           state.currentFeatures[fname] = val;
-          document.getElementById(`val-badge-${fname}`).textContent = `${val} ${meta.unit}`.trim();
+          const displayVal = (String(val).includes(".") ? val.toFixed(1) : val);
+          document.getElementById(`val-badge-${fname}`).textContent = `${displayVal} ${meta.unit}`.trim();
           debouncePredict();
         });
         row.appendChild(sliderRow);
@@ -329,12 +337,19 @@
   }
 
   function formatDisplayVal(fname, val, meta) {
+    if (fname.toLowerCase() === "sex" || (meta && meta.label && meta.label.toLowerCase().includes("sex"))) {
+      return Number(val) === 1 ? "Male" : "Female";
+    }
     if (meta.type === "binary") {
       return Number(val) === 1 ? "Yes" : "No";
     }
     if (meta.options) {
       const match = meta.options.find(o => o.value === Number(val));
       return match ? match.label : String(val);
+    }
+    const num = Number(val);
+    if (!isNaN(num) && String(val).includes(".")) {
+      return `${num.toFixed(1)} ${meta.unit || ''}`.trim();
     }
     return `${val} ${meta.unit || ''}`.trim();
   }
@@ -890,3 +905,80 @@
     initApp();
   }
 })();
+
+// === CLINICAL UI SANITIZER & AUTO-BMI CALCULATOR ===
+function applyClinicalUIPolish() {
+  // 1. Round any raw floating point numbers (e.g., 26.122448979591837 -> 26.1)
+  document.querySelectorAll('span, div, label, strong, b').forEach((el) => {
+    if (el.children.length === 0 && el.textContent) {
+      const txt = el.textContent.trim();
+      // Match raw decimals with more than 2 decimal places
+      if (/^-?\d+\.\d{3,}(\s*[a-zA-Z/%²]*)?$/.test(txt)) {
+        const match = txt.match(/^(-?\d+\.\d+)(\s*[a-zA-Z/%²]*)?$/);
+        if (match) {
+          const num = parseFloat(match[1]);
+          const unit = match[2] || '';
+          el.textContent = `${num.toFixed(1)}${unit}`;
+        }
+      }
+    }
+  });
+
+  // 2. Fix "Biological Sex: Yes / No" -> "Male / Female"
+  document.querySelectorAll('div, section, li').forEach((container) => {
+    const labelText = container.textContent || '';
+    if (
+      labelText.includes('Biological Sex') &&
+      container.querySelectorAll('button').length === 2
+    ) {
+      const btns = container.querySelectorAll('button');
+      if (btns[0].textContent.trim() === 'Yes') btns[0].textContent = 'Male';
+      if (btns[1].textContent.trim() === 'No') btns[1].textContent = 'Female';
+      // Also update the top-right status badge inside the Sex card
+      container.querySelectorAll('span, .badge').forEach((badge) => {
+        if (badge.textContent.trim() === 'Yes') badge.textContent = 'Male';
+        if (badge.textContent.trim() === 'No') badge.textContent = 'Female';
+      });
+    }
+  });
+
+  // 3. Auto-compute BMI when Weight or Height sliders change
+  const weightInput = document.querySelector(
+    'input[data-feature="Weight"], input[name="Weight"], #slider-Weight'
+  );
+  const heightInput = document.querySelector(
+    'input[data-feature="Length"], input[data-feature="Height"], input[name="Length"], #slider-Length, #slider-Height'
+  );
+  const bmiInput = document.querySelector(
+    'input[data-feature="BMI"], input[name="BMI"], #slider-BMI'
+  );
+
+  if (weightInput && heightInput && bmiInput && !weightInput.dataset.bmiBound) {
+    const syncBMI = () => {
+      const w = parseFloat(weightInput.value) || 75;
+      const hCm = parseFloat(heightInput.value) || 170;
+      const bmi = +(w / Math.pow(hCm / 100, 2)).toFixed(1);
+      bmiInput.value = bmi;
+      bmiInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    weightInput.addEventListener('input', syncBMI);
+    heightInput.addEventListener('input', syncBMI);
+    weightInput.dataset.bmiBound = 'true';
+  }
+}
+
+// Run immediately and observe DOM updates when presets or sliders change
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      applyClinicalUIPolish();
+      const observer = new MutationObserver(() => applyClinicalUIPolish());
+      observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    });
+  } else {
+    applyClinicalUIPolish();
+    const observer = new MutationObserver(() => applyClinicalUIPolish());
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+}
+
