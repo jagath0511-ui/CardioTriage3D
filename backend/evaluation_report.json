@@ -1,0 +1,862 @@
+{
+  "project": "CardioTriage 3D",
+  "competition": "Multimodal AI Hackathon 2026 - Track A",
+  "dataset": "UCI Extension of Z-Alizadeh Sani (#411)",
+  "sample_size": 303,
+  "feature_count": 54,
+  "zero_target_leakage_guard": {
+    "status": "PASS",
+    "assertion_checked": "assert not any(col.lower() in target_names_lower for col in X_df.columns)",
+    "excluded_targets": [
+      "Cath",
+      "LAD",
+      "LCX",
+      "RCA"
+    ],
+    "dropped_zero_variance_columns": [
+      "Exertional CP"
+    ]
+  },
+  "monotone_constraints_applied": {
+    "Age": 1,
+    "BP": 1,
+    "LDL": 1,
+    "TG": 1,
+    "FBS": 1,
+    "Current Smoker": 1,
+    "Region RWMA": 1,
+    "St Elevation": 1,
+    "St Depression": 1,
+    "Tinversion": 1,
+    "EF-TTE": -1,
+    "HDL": -1
+  },
+  "clinical_domains": {
+    "Demographics & History": 17,
+    "Vitals & Symptoms": 13,
+    "ECG Findings": 7,
+    "Lab Biomarkers": 14,
+    "Echo & Wall Motion": 3
+  },
+  "cross_validation": {
+    "method": "5-Fold Stratified K-Fold (shuffle=True, random_state=42)",
+    "evaluation_thresholds": [
+      0.5,
+      0.35
+    ],
+    "metrics": {
+      "Cath": {
+        "target": "Cath",
+        "total_samples": 303,
+        "positive_count": 216,
+        "negative_count": 87,
+        "positive_prevalence_pct": 71.3,
+        "roc_auc": 0.9085,
+        "threshold_0_50": {
+          "threshold": 0.5,
+          "accuracy": 0.8515,
+          "precision": 0.913,
+          "recall": 0.875,
+          "f1_score": 0.8936,
+          "confusion_matrix": {
+            "tp": 189,
+            "fp": 18,
+            "tn": 69,
+            "fn": 27
+          }
+        },
+        "threshold_0_35_triage": {
+          "threshold": 0.35,
+          "accuracy": 0.8515,
+          "precision": 0.8701,
+          "recall": 0.9306,
+          "f1_score": 0.8993,
+          "confusion_matrix": {
+            "tp": 201,
+            "fp": 30,
+            "tn": 57,
+            "fn": 15
+          }
+        },
+        "per_fold_mean": {
+          "accuracy": 0.8513,
+          "accuracy_std": 0.0672,
+          "precision": 0.9147,
+          "recall": 0.8751,
+          "f1": 0.8939,
+          "roc_auc": 0.9119
+        },
+        "folds": [
+          {
+            "fold": 1,
+            "accuracy": 0.8688524590163934,
+            "precision": 0.95,
+            "recall": 0.8636363636363636,
+            "f1": 0.9047619047619048,
+            "roc_auc": 0.9652406417112299
+          },
+          {
+            "fold": 2,
+            "accuracy": 0.9508196721311475,
+            "precision": 0.9761904761904762,
+            "recall": 0.9534883720930233,
+            "f1": 0.9647058823529412,
+            "roc_auc": 0.941860465116279
+          },
+          {
+            "fold": 3,
+            "accuracy": 0.7868852459016393,
+            "precision": 0.875,
+            "recall": 0.813953488372093,
+            "f1": 0.8433734939759037,
+            "roc_auc": 0.8617571059431525
+          },
+          {
+            "fold": 4,
+            "accuracy": 0.8833333333333333,
+            "precision": 0.95,
+            "recall": 0.8837209302325582,
+            "f1": 0.9156626506024096,
+            "roc_auc": 0.9630642954856361
+          },
+          {
+            "fold": 5,
+            "accuracy": 0.7666666666666667,
+            "precision": 0.8222222222222222,
+            "recall": 0.8604651162790697,
+            "f1": 0.8409090909090909,
+            "roc_auc": 0.8276333789329686
+          }
+        ]
+      },
+      "LAD": {
+        "target": "LAD",
+        "total_samples": 303,
+        "positive_count": 177,
+        "negative_count": 126,
+        "positive_prevalence_pct": 58.4,
+        "roc_auc": 0.8474,
+        "threshold_0_50": {
+          "threshold": 0.5,
+          "accuracy": 0.7921,
+          "precision": 0.8276,
+          "recall": 0.8136,
+          "f1_score": 0.8205,
+          "confusion_matrix": {
+            "tp": 144,
+            "fp": 30,
+            "tn": 96,
+            "fn": 33
+          }
+        },
+        "threshold_0_35_triage": {
+          "threshold": 0.35,
+          "accuracy": 0.7855,
+          "precision": 0.7718,
+          "recall": 0.8983,
+          "f1_score": 0.8303,
+          "confusion_matrix": {
+            "tp": 159,
+            "fp": 47,
+            "tn": 79,
+            "fn": 18
+          }
+        },
+        "per_fold_mean": {
+          "accuracy": 0.7922,
+          "accuracy_std": 0.0392,
+          "precision": 0.8292,
+          "recall": 0.8138,
+          "f1": 0.8204,
+          "roc_auc": 0.8523
+        },
+        "folds": [
+          {
+            "fold": 1,
+            "accuracy": 0.7213114754098361,
+            "precision": 0.7878787878787878,
+            "recall": 0.7222222222222222,
+            "f1": 0.7536231884057971,
+            "roc_auc": 0.7822222222222222
+          },
+          {
+            "fold": 2,
+            "accuracy": 0.8032786885245902,
+            "precision": 0.8157894736842105,
+            "recall": 0.8611111111111112,
+            "f1": 0.8378378378378378,
+            "roc_auc": 0.8211111111111111
+          },
+          {
+            "fold": 3,
+            "accuracy": 0.819672131147541,
+            "precision": 0.8333333333333334,
+            "recall": 0.8571428571428571,
+            "f1": 0.8450704225352113,
+            "roc_auc": 0.9142857142857143
+          },
+          {
+            "fold": 4,
+            "accuracy": 0.8333333333333334,
+            "precision": 0.9032258064516129,
+            "recall": 0.8,
+            "f1": 0.8484848484848485,
+            "roc_auc": 0.9337142857142857
+          },
+          {
+            "fold": 5,
+            "accuracy": 0.7833333333333333,
+            "precision": 0.8055555555555556,
+            "recall": 0.8285714285714286,
+            "f1": 0.8169014084507042,
+            "roc_auc": 0.8102857142857143
+          }
+        ]
+      },
+      "LCX": {
+        "target": "LCX",
+        "total_samples": 303,
+        "positive_count": 119,
+        "negative_count": 184,
+        "positive_prevalence_pct": 39.3,
+        "roc_auc": 0.7269,
+        "threshold_0_50": {
+          "threshold": 0.5,
+          "accuracy": 0.6964,
+          "precision": 0.6031,
+          "recall": 0.6639,
+          "f1_score": 0.632,
+          "confusion_matrix": {
+            "tp": 79,
+            "fp": 52,
+            "tn": 132,
+            "fn": 40
+          }
+        },
+        "threshold_0_35_triage": {
+          "threshold": 0.35,
+          "accuracy": 0.6271,
+          "precision": 0.516,
+          "recall": 0.8151,
+          "f1_score": 0.6319,
+          "confusion_matrix": {
+            "tp": 97,
+            "fp": 91,
+            "tn": 93,
+            "fn": 22
+          }
+        },
+        "per_fold_mean": {
+          "accuracy": 0.6962,
+          "accuracy_std": 0.0581,
+          "precision": 0.6086,
+          "recall": 0.6634,
+          "f1": 0.6332,
+          "roc_auc": 0.7276
+        },
+        "folds": [
+          {
+            "fold": 1,
+            "accuracy": 0.639344262295082,
+            "precision": 0.5384615384615384,
+            "recall": 0.5833333333333334,
+            "f1": 0.56,
+            "roc_auc": 0.6576576576576576
+          },
+          {
+            "fold": 2,
+            "accuracy": 0.6885245901639344,
+            "precision": 0.5862068965517241,
+            "recall": 0.7083333333333334,
+            "f1": 0.6415094339622641,
+            "roc_auc": 0.7522522522522523
+          },
+          {
+            "fold": 3,
+            "accuracy": 0.8032786885245902,
+            "precision": 0.7727272727272727,
+            "recall": 0.7083333333333334,
+            "f1": 0.7391304347826086,
+            "roc_auc": 0.8198198198198199
+          },
+          {
+            "fold": 4,
+            "accuracy": 0.65,
+            "precision": 0.5384615384615384,
+            "recall": 0.6086956521739131,
+            "f1": 0.5714285714285714,
+            "roc_auc": 0.6603995299647474
+          },
+          {
+            "fold": 5,
+            "accuracy": 0.7,
+            "precision": 0.6071428571428571,
+            "recall": 0.7083333333333334,
+            "f1": 0.6538461538461539,
+            "roc_auc": 0.7476851851851851
+          }
+        ]
+      },
+      "RCA": {
+        "target": "RCA",
+        "total_samples": 303,
+        "positive_count": 114,
+        "negative_count": 189,
+        "positive_prevalence_pct": 37.6,
+        "roc_auc": 0.7165,
+        "threshold_0_50": {
+          "threshold": 0.5,
+          "accuracy": 0.6601,
+          "precision": 0.547,
+          "recall": 0.5614,
+          "f1_score": 0.5541,
+          "confusion_matrix": {
+            "tp": 64,
+            "fp": 53,
+            "tn": 136,
+            "fn": 50
+          }
+        },
+        "threshold_0_35_triage": {
+          "threshold": 0.35,
+          "accuracy": 0.6238,
+          "precision": 0.5,
+          "recall": 0.7544,
+          "f1_score": 0.6014,
+          "confusion_matrix": {
+            "tp": 86,
+            "fp": 86,
+            "tn": 103,
+            "fn": 28
+          }
+        },
+        "per_fold_mean": {
+          "accuracy": 0.6601,
+          "accuracy_std": 0.0371,
+          "precision": 0.5516,
+          "recall": 0.5605,
+          "f1": 0.5513,
+          "roc_auc": 0.7182
+        },
+        "folds": [
+          {
+            "fold": 1,
+            "accuracy": 0.6229508196721312,
+            "precision": 0.5,
+            "recall": 0.5217391304347826,
+            "f1": 0.5106382978723404,
+            "roc_auc": 0.6830663615560641
+          },
+          {
+            "fold": 2,
+            "accuracy": 0.7049180327868853,
+            "precision": 0.631578947368421,
+            "recall": 0.5217391304347826,
+            "f1": 0.5714285714285714,
+            "roc_auc": 0.8043478260869565
+          },
+          {
+            "fold": 3,
+            "accuracy": 0.6557377049180327,
+            "precision": 0.53125,
+            "recall": 0.7391304347826086,
+            "f1": 0.6181818181818182,
+            "roc_auc": 0.7151029748283753
+          },
+          {
+            "fold": 4,
+            "accuracy": 0.7,
+            "precision": 0.6190476190476191,
+            "recall": 0.5652173913043478,
+            "f1": 0.5909090909090909,
+            "roc_auc": 0.7485311398354876
+          },
+          {
+            "fold": 5,
+            "accuracy": 0.6166666666666667,
+            "precision": 0.47619047619047616,
+            "recall": 0.45454545454545453,
+            "f1": 0.46511627906976744,
+            "roc_auc": 0.6399521531100478
+          }
+        ]
+      }
+    }
+  },
+  "top_feature_importances": {
+    "Cath": [
+      {
+        "feature": "Typical Chest Pain",
+        "label": "Typical Anginal Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.16609999537467957
+      },
+      {
+        "feature": "Region RWMA",
+        "label": "Regional Wall Motion Abnormality",
+        "domain": "Echo & Wall Motion",
+        "modifiable": false,
+        "importance": 0.05389999970793724
+      },
+      {
+        "feature": "HTN",
+        "label": "Hypertension",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.05249999836087227
+      },
+      {
+        "feature": "EF-TTE",
+        "label": "Ejection Fraction (TTE)",
+        "domain": "Echo & Wall Motion",
+        "modifiable": false,
+        "importance": 0.04659999907016754
+      },
+      {
+        "feature": "Age",
+        "label": "Age",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.04100000113248825
+      },
+      {
+        "feature": "Weight",
+        "label": "Weight",
+        "domain": "Demographics & History",
+        "modifiable": true,
+        "importance": 0.03880000114440918
+      },
+      {
+        "feature": "Nonanginal",
+        "label": "Non-Anginal Chest Discomfort",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.03700000047683716
+      },
+      {
+        "feature": "Tinversion",
+        "label": "T-Wave Inversion",
+        "domain": "ECG Findings",
+        "modifiable": false,
+        "importance": 0.03400000184774399
+      },
+      {
+        "feature": "DM",
+        "label": "Diabetes Mellitus",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03189999982714653
+      },
+      {
+        "feature": "FBS",
+        "label": "Fasting Blood Sugar",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.03139999881386757
+      },
+      {
+        "feature": "Atypical",
+        "label": "Atypical Chest Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.029899999499320984
+      },
+      {
+        "feature": "TG",
+        "label": "Triglycerides",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.029600000008940697
+      },
+      {
+        "feature": "Sex",
+        "label": "Biological Sex",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.0284000001847744
+      },
+      {
+        "feature": "HDL",
+        "label": "High-Density Lipoprotein (HDL-C)",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.026799999177455902
+      },
+      {
+        "feature": "PR",
+        "label": "Pulse Rate",
+        "domain": "Vitals & Symptoms",
+        "modifiable": true,
+        "importance": 0.02669999934732914
+      }
+    ],
+    "LAD": [
+      {
+        "feature": "Typical Chest Pain",
+        "label": "Typical Anginal Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.11879999935626984
+      },
+      {
+        "feature": "Region RWMA",
+        "label": "Regional Wall Motion Abnormality",
+        "domain": "Echo & Wall Motion",
+        "modifiable": false,
+        "importance": 0.06909999996423721
+      },
+      {
+        "feature": "EF-TTE",
+        "label": "Ejection Fraction (TTE)",
+        "domain": "Echo & Wall Motion",
+        "modifiable": false,
+        "importance": 0.04899999871850014
+      },
+      {
+        "feature": "Lymph",
+        "label": "Lymphocyte Percentage",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.04520000144839287
+      },
+      {
+        "feature": "DM",
+        "label": "Diabetes Mellitus",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.044599998742341995
+      },
+      {
+        "feature": "Age",
+        "label": "Age",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.04410000145435333
+      },
+      {
+        "feature": "St Depression",
+        "label": "ST-Segment Depression",
+        "domain": "ECG Findings",
+        "modifiable": false,
+        "importance": 0.03999999910593033
+      },
+      {
+        "feature": "PR",
+        "label": "Pulse Rate",
+        "domain": "Vitals & Symptoms",
+        "modifiable": true,
+        "importance": 0.03629999980330467
+      },
+      {
+        "feature": "CR",
+        "label": "Serum Creatinine",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.03420000150799751
+      },
+      {
+        "feature": "HTN",
+        "label": "Hypertension",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03350000083446503
+      },
+      {
+        "feature": "ESR",
+        "label": "Erythrocyte Sedimentation Rate",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.031199999153614044
+      },
+      {
+        "feature": "WBC",
+        "label": "White Blood Cell Count",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.02669999934732914
+      },
+      {
+        "feature": "TG",
+        "label": "Triglycerides",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.02630000002682209
+      },
+      {
+        "feature": "Tinversion",
+        "label": "T-Wave Inversion",
+        "domain": "ECG Findings",
+        "modifiable": false,
+        "importance": 0.025699999183416367
+      },
+      {
+        "feature": "FBS",
+        "label": "Fasting Blood Sugar",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.025699999183416367
+      }
+    ],
+    "LCX": [
+      {
+        "feature": "Typical Chest Pain",
+        "label": "Typical Anginal Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.06419999897480011
+      },
+      {
+        "feature": "DM",
+        "label": "Diabetes Mellitus",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.05490000173449516
+      },
+      {
+        "feature": "PR",
+        "label": "Pulse Rate",
+        "domain": "Vitals & Symptoms",
+        "modifiable": true,
+        "importance": 0.053700000047683716
+      },
+      {
+        "feature": "Age",
+        "label": "Age",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.05310000106692314
+      },
+      {
+        "feature": "Length",
+        "label": "Height",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.0406000018119812
+      },
+      {
+        "feature": "CR",
+        "label": "Serum Creatinine",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.0406000018119812
+      },
+      {
+        "feature": "HDL",
+        "label": "High-Density Lipoprotein (HDL-C)",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.038600001484155655
+      },
+      {
+        "feature": "TG",
+        "label": "Triglycerides",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.03819999843835831
+      },
+      {
+        "feature": "K",
+        "label": "Serum Potassium",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.038100000470876694
+      },
+      {
+        "feature": "DLP",
+        "label": "Dyslipidemia",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03759999945759773
+      },
+      {
+        "feature": "FBS",
+        "label": "Fasting Blood Sugar",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.03680000081658363
+      },
+      {
+        "feature": "BP",
+        "label": "Systolic Blood Pressure",
+        "domain": "Vitals & Symptoms",
+        "modifiable": true,
+        "importance": 0.03539999946951866
+      },
+      {
+        "feature": "Neut",
+        "label": "Neutrophil Percentage",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.03519999980926514
+      },
+      {
+        "feature": "PLT",
+        "label": "Platelet Count",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.03400000184774399
+      },
+      {
+        "feature": "Tinversion",
+        "label": "T-Wave Inversion",
+        "domain": "ECG Findings",
+        "modifiable": false,
+        "importance": 0.031300000846385956
+      }
+    ],
+    "RCA": [
+      {
+        "feature": "Typical Chest Pain",
+        "label": "Typical Anginal Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.08510000258684158
+      },
+      {
+        "feature": "Neut",
+        "label": "Neutrophil Percentage",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.04569999873638153
+      },
+      {
+        "feature": "DM",
+        "label": "Diabetes Mellitus",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.04470000043511391
+      },
+      {
+        "feature": "FH",
+        "label": "Family History of CAD",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03579999879002571
+      },
+      {
+        "feature": "Atypical",
+        "label": "Atypical Chest Pain",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.033799998462200165
+      },
+      {
+        "feature": "Age",
+        "label": "Age",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03310000151395798
+      },
+      {
+        "feature": "Sex",
+        "label": "Biological Sex",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.03280000016093254
+      },
+      {
+        "feature": "ESR",
+        "label": "Erythrocyte Sedimentation Rate",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.032499998807907104
+      },
+      {
+        "feature": "Lymph",
+        "label": "Lymphocyte Percentage",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.031599998474121094
+      },
+      {
+        "feature": "Length",
+        "label": "Height",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.030500000342726707
+      },
+      {
+        "feature": "HTN",
+        "label": "Hypertension",
+        "domain": "Demographics & History",
+        "modifiable": false,
+        "importance": 0.030300000682473183
+      },
+      {
+        "feature": "TG",
+        "label": "Triglycerides",
+        "domain": "Lab Biomarkers",
+        "modifiable": true,
+        "importance": 0.03020000085234642
+      },
+      {
+        "feature": "Dyspnea",
+        "label": "Dyspnea on Exertion",
+        "domain": "Vitals & Symptoms",
+        "modifiable": false,
+        "importance": 0.029400000348687172
+      },
+      {
+        "feature": "PLT",
+        "label": "Platelet Count",
+        "domain": "Lab Biomarkers",
+        "modifiable": false,
+        "importance": 0.029200000688433647
+      },
+      {
+        "feature": "PR",
+        "label": "Pulse Rate",
+        "domain": "Vitals & Symptoms",
+        "modifiable": true,
+        "importance": 0.028699999675154686
+      }
+    ]
+  },
+  "presets_catalog": [
+    {
+      "id": "preset_triple_vessel",
+      "name": "Triple-Vessel CAD (High-Risk Diffuse)",
+      "patient_index": 7,
+      "ground_truth": {
+        "Cath": "CAD",
+        "LAD": "Stenotic",
+        "LCX": "Stenotic",
+        "RCA": "Stenotic"
+      }
+    },
+    {
+      "id": "preset_isolated_lad",
+      "name": "Isolated LAD Stenosis ('Widowmaker' Profile)",
+      "patient_index": 2,
+      "ground_truth": {
+        "Cath": "CAD",
+        "LAD": "Stenotic",
+        "LCX": "Normal",
+        "RCA": "Normal"
+      }
+    },
+    {
+      "id": "preset_rca_lcx",
+      "name": "RCA + LCX Disease (Inferolateral Multivessel)",
+      "patient_index": 9,
+      "ground_truth": {
+        "Cath": "CAD",
+        "LAD": "Normal",
+        "LCX": "Stenotic",
+        "RCA": "Stenotic"
+      }
+    },
+    {
+      "id": "preset_healthy_normal",
+      "name": "Healthy Normal Baseline (Low Risk)",
+      "patient_index": 17,
+      "ground_truth": {
+        "Cath": "Normal",
+        "LAD": "Normal",
+        "LCX": "Normal",
+        "RCA": "Normal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardioTriage 3D — Multimodal Cardiovascular Risk & Digital Twin Workstation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫀</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. MANDATORY CLINICAL SAFETY BANNER (Requirement 5)                      -->
+  <!-- ========================================================================= -->
+  <div id="safety-banner" class="clinical-safety-banner" role="alert">
+    <div class="banner-inner">
+      <span class="banner-icon">⚠️</span>
+      <span class="banner-text">
+        <strong>CLINICAL DECISION SUPPORT &amp; EDUCATIONAL PROTOTYPE ONLY</strong> — Predictions are statistical estimates derived from the UCI Z-Alizadeh Sani cohort (N=303) and are <strong>NOT a substitute for formal diagnostic coronary angiography or clinical judgment</strong>.
+      </span>
+      <span class="banner-badge">FDA Research / Non-Diagnostic</span>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- WORKSTATION HEADER                                                       -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand">
+        <div class="brand-pulse-ring">
+          <span class="brand-icon">🫀</span>
+        </div>
+        <div>
+          <div class="brand-title">CardioTriage <span class="brand-accent">3D</span></div>
+          <div class="brand-subtitle">Multimodal Hemodynamic &amp; Anatomical Digital Twin</div>
+        </div>
+      </div>
+      <div class="system-status-chip">
+        <span class="status-dot"></span>
+        <span class="status-label">UCI #411 ML Engine (N=303)</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <!-- Patient Preset Selector -->
+      <div class="header-control-group">
+        <label for="preset-selector" class="control-label">PATIENT CASE ARCHIVE</label>
+        <div class="select-wrapper">
+          <select id="preset-selector" class="preset-dropdown">
+            <option value="" disabled selected>Loading authentic patient presets...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Triage Sensitivity Mode Toggle -->
+      <div class="header-control-group">
+        <label class="control-label">TRIAGE SENSITIVITY CUTOFF</label>
+        <div class="segmented-control" id="triage-mode-toggle">
+          <button type="button" class="segment-btn active" data-threshold="0.50" id="btn-triage-std">
+            <span class="seg-icon">⚖️</span> Standard (0.50)
+          </button>
+          <button type="button" class="segment-btn" data-threshold="0.35" id="btn-triage-er">
+            <span class="seg-icon">🚨</span> High-Sensitivity ER (0.35)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- View Mode Toggle -->
+      <div class="header-control-group">
+        <label class="control-label">DISPLAY MODE</label>
+        <div class="segmented-control" id="view-mode-toggle">
+          <button type="button" class="segment-btn active" data-view="clinician" id="btn-view-clinician">
+            <span class="seg-icon">🩺</span> Clinician Cath-Lab
+          </button>
+          <button type="button" class="segment-btn" data-view="bedside" id="btn-view-bedside">
+            <span class="seg-icon">🤝</span> Patient Bedside
+          </button>
+        </div>
+      </div>
+
+      <!-- 5-Fold CV Metrics Modal Button -->
+      <button id="btn-open-metrics-modal" class="btn-action-outline" title="Inspect 5-Fold Stratified Cross-Validation Audit">
+        <span class="btn-icon">📊</span> 5-Fold CV Audit
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 3-COLUMN CATH-LAB WORKSTATION LAYOUT                                      -->
+  <!-- ========================================================================= -->
+  <main class="workstation-container">
+
+    <!-- ======================================================================= -->
+    <!-- LEFT COLUMN (26%): PHYSIOLOGICAL INPUT & COUNTERFACTUAL CONSOLE         -->
+    <!-- ======================================================================= -->
+    <aside class="col-left console-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Physiological Console</h2>
+          <div class="panel-subtitle">54 Biometric Levers &amp; Counterfactuals</div>
+        </div>
+        <span class="badge-count" id="modifiable-summary-badge">10 Modifiable</span>
+      </div>
+
+      <!-- Smart Report Auto-Filler Trigger -->
+      <div class="report-import-trigger-bar">
+        <button id="btn-open-import-modal" class="btn-import-report" title="Paste EHR clinical note or lab report to auto-fill biometrics">
+          <span class="btn-icon">📥</span> Import Lab Report / Clinical Note
+        </button>
+      </div>
+
+      <!-- Counterfactual Action Controls -->
+      <div class="counterfactual-actions-card">
+        <div class="cf-actions-row">
+          <button id="btn-lock-baseline" class="btn-cf btn-lock" title="Lock current biometrics as counterfactual reference">
+            <span class="cf-icon">🔒</span> <span id="lock-baseline-label">Lock Baseline</span>
+          </button>
+          <button id="btn-simulate-lifestyle" class="btn-cf btn-simulate" title="Simulate guideline-directed risk optimization (BP 120, LDL 70, Smoker 0)">
+            <span class="cf-icon">⚡</span> Simulate Risk Control
+          </button>
+        </div>
+        <div id="baseline-status-bar" class="baseline-status-bar hidden">
+          <span class="status-indicator"></span>
+          <span class="status-msg" id="baseline-status-text">Baseline Locked</span>
+          <button id="btn-clear-baseline" class="btn-text-clear" title="Clear baseline comparison">Reset</button>
+        </div>
+      </div>
+
+      <!-- Clinical Domain Tabs -->
+      <div class="domain-tabs-nav" id="domain-tabs-nav">
+        <button class="domain-tab-btn active" data-domain="Demographics & History">Demo</button>
+        <button class="domain-tab-btn" data-domain="Vitals & Symptoms">Vitals</button>
+        <button class="domain-tab-btn" data-domain="ECG Findings">ECG</button>
+        <button class="domain-tab-btn" data-domain="Lab Biomarkers">Labs</button>
+        <button class="domain-tab-btn" data-domain="Echo & Wall Motion">Echo</button>
+      </div>
+
+      <!-- Clinical Feature Controls Container -->
+      <div class="features-scroll-container" id="features-form-container">
+        <div class="loading-spinner-container">
+          <div class="spinner"></div>
+          <span>Loading clinical variables schema...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================= -->
+    <!-- CENTER COLUMN (44%): 3D ANATOMICAL CORONARY & MYOCARDIAL CANVAS         -->
+    <!-- ======================================================================= -->
+    <section class="col-center canvas-panel">
+      <!-- 3D Viewport Controls & HUD Overlay -->
+      <div class="viewport-hud-top">
+        <div class="patient-vitals-strip">
+          <div class="vital-chip">
+            <span class="vital-label">PULSE RATE</span>
+            <span class="vital-value" id="hud-pr-val">75</span> <span class="vital-unit">BPM</span>
+            <span class="ecg-wave-icon">📈</span>
+          </div>
+          <div class="vital-chip">
+            <span class="vital-label">LVEF (ECHO)</span>
+            <span class="vital-value" id="hud-ef-val">50</span> <span class="vital-unit">%</span>
+          </div>
+          <div class="vital-chip">
+            <span class="vital-label">WALL MOTION (RWMA)</span>
+            <span class="vital-value" id="hud-rwma-val">0</span> <span class="vital-unit">zones</span>
+          </div>
+        </div>
+
+        <div class="camera-angles-toolbar">
+          <button class="cam-btn active" data-view="ap" id="btn-cam-ap" title="Anterior-Posterior Standard Projection">AP View</button>
+          <button class="cam-btn" data-view="lao" id="btn-cam-lao" title="Left Anterior Oblique (LAD/LCX bifurcation)">LAO View</button>
+          <button class="cam-btn" data-view="rao" id="btn-cam-rao" title="Right Anterior Oblique (RCA course)">RAO View</button>
+          <button class="cam-btn" id="btn-cam-reset" title="Reset Viewport Camera">⟳ Reset</button>
+        </div>
+      </div>
+
+      <!-- 3D WebGL Canvas Container -->
+      <div id="heart-canvas-container" class="heart-canvas-container">
+        <!-- Three.js will attach here -->
+      </div>
+
+      <!-- 3D Interactive Legend & Vessel Selector -->
+      <div class="viewport-hud-bottom">
+        <div class="hud-vessel-selector">
+          <span class="hud-vessel-pill active" data-target="Cath" id="pill-target-cath">All Coronary Tree</span>
+          <span class="hud-vessel-pill" data-target="LAD" id="pill-target-lad">
+            <span class="dot-indicator dot-lad"></span> LAD (Anterior)
+          </span>
+          <span class="hud-vessel-pill" data-target="LCX" id="pill-target-lcx">
+            <span class="dot-indicator dot-lcx"></span> LCX (Circumflex)
+          </span>
+          <span class="hud-vessel-pill" data-target="RCA" id="pill-target-rca">
+            <span class="dot-indicator dot-rca"></span> RCA (Inferior)
+          </span>
+        </div>
+
+        <div class="hud-controls-toggle">
+          <label class="hud-toggle-label">
+            <input type="checkbox" id="toggle-chambers" checked>
+            <span>Myocardium</span>
+          </label>
+          <label class="hud-toggle-label">
+            <input type="checkbox" id="toggle-perfusion" checked>
+            <span>Perfusion Zones</span>
+          </label>
+          <label class="hud-toggle-label">
+            <input type="checkbox" id="toggle-flow" checked>
+            <span>Flow Particles</span>
+          </label>
+          <label class="hud-toggle-label">
+            <input type="checkbox" id="toggle-beat" checked>
+            <span>Cardiac Cycle</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Floating 3D Tooltip Anchor -->
+      <div id="vessel-3d-tooltip" class="vessel-tooltip hidden">
+        <div class="tooltip-header" id="tooltip-title">LAD</div>
+        <div class="tooltip-body" id="tooltip-body">Stenosis Risk: 84.5%</div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- RIGHT COLUMN (30%): MULTI-VESSEL RISK, TRIAGE & SHAP EXPLAINABILITY     -->
+    <!-- ======================================================================= -->
+    <aside class="col-right triage-panel">
+
+      <!-- Dynamic Clinical Triage Recommendation Card -->
+      <div class="triage-card" id="triage-recommendation-card">
+        <div class="triage-header">
+          <span class="triage-badge" id="triage-badge">TRIAGE PENDING</span>
+          <span class="triage-threshold-indicator" id="triage-threshold-label">Threshold: 0.50</span>
+        </div>
+        <div class="triage-body">
+          <div class="triage-action-title" id="triage-action-title">Calculating risk profile...</div>
+          <div class="triage-action-desc" id="triage-action-desc">Awaiting patient biometrics</div>
+        </div>
+
+        <!-- Anatomical Coherence Check -->
+        <div class="coherence-box" id="coherence-box">
+          <div class="coherence-header">
+            <span class="coherence-title">ANATOMICAL COHERENCE VERIFICATION</span>
+            <span class="coherence-status-chip" id="coherence-chip">CONCORDANT</span>
+          </div>
+          <div class="coherence-math">
+            <span class="math-term">Cath Probability: <strong id="coh-cath-val">--%</strong></span>
+            <span class="math-divider">vs</span>
+            <span class="math-term">P(Any Vessel): <strong id="coh-union-val">--%</strong></span>
+          </div>
+          <div class="coherence-formula-note">
+            Formula: <code>P(Any) = 1 − (1−P_LAD)(1−P_LCX)(1−P_RCA)</code>
+          </div>
+          <div class="coherence-explanation" id="coh-explanation-text">
+            Overall catheterization risk matches multi-vessel anatomical branches.
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Interactive Risk Cards -->
+      <div class="risk-cards-grid">
+        <!-- Cath (Overall CAD) -->
+        <div class="risk-card active" data-target="Cath" id="card-risk-cath">
+          <div class="risk-card-top">
+            <span class="risk-card-title">Overall CAD (Cath)</span>
+            <span class="risk-tier-badge" id="badge-cath">--</span>
+          </div>
+          <div class="risk-card-prob-row">
+            <span class="prob-num" id="prob-val-cath">--</span><span class="prob-pct">%</span>
+            <span class="delta-chip hidden" id="delta-cath">+0.0%</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="bar-cath" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- LAD -->
+        <div class="risk-card" data-target="LAD" id="card-risk-lad">
+          <div class="risk-card-top">
+            <span class="risk-card-title"><span class="dot-indicator dot-lad"></span> LAD (Anterior)</span>
+            <span class="risk-tier-badge" id="badge-lad">--</span>
+          </div>
+          <div class="risk-card-prob-row">
+            <span class="prob-num" id="prob-val-lad">--</span><span class="prob-pct">%</span>
+            <span class="delta-chip hidden" id="delta-lad">+0.0%</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="bar-lad" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- LCX -->
+        <div class="risk-card" data-target="LCX" id="card-risk-lcx">
+          <div class="risk-card-top">
+            <span class="risk-card-title"><span class="dot-indicator dot-lcx"></span> LCX (Circumflex)</span>
+            <span class="risk-tier-badge" id="badge-lcx">--</span>
+          </div>
+          <div class="risk-card-prob-row">
+            <span class="prob-num" id="prob-val-lcx">--</span><span class="prob-pct">%</span>
+            <span class="delta-chip hidden" id="delta-lcx">+0.0%</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="bar-lcx" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- RCA -->
+        <div class="risk-card" data-target="RCA" id="card-risk-rca">
+          <div class="risk-card-top">
+            <span class="risk-card-title"><span class="dot-indicator dot-rca"></span> RCA (Inferior)</span>
+            <span class="risk-tier-badge" id="badge-rca">--</span>
+          </div>
+          <div class="risk-card-prob-row">
+            <span class="prob-num" id="prob-val-rca">--</span><span class="prob-pct">%</span>
+            <span class="delta-chip hidden" id="delta-rca">+0.0%</span>
+          </div>
+          <div class="risk-bar-track">
+            <div class="risk-bar-fill" id="bar-rca" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Tree-SHAP Explainability Section -->
+      <div class="shap-container">
+        <div class="shap-header">
+          <div>
+            <h3 class="shap-title">
+              <span id="shap-target-title">Cath (Overall CAD)</span> Attribution
+            </h3>
+            <div class="shap-subtitle">Local Tree-SHAP Feature Drivers (N=303 cohort)</div>
+          </div>
+          <div class="shap-legend">
+            <span class="legend-chip legend-red">■ Risk Increasing (+)</span>
+            <span class="legend-chip legend-teal">■ Protective (−)</span>
+          </div>
+        </div>
+
+        <!-- Clinician Waterfall / Bar View -->
+        <div id="clinician-shap-view" class="shap-chart-view">
+          <div class="shap-bars-list" id="shap-bars-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Patient Bedside Plain-Language Explainer View -->
+        <div id="bedside-shap-view" class="bedside-explainer-view hidden">
+          <div class="bedside-card">
+            <div class="bedside-header">
+              <span class="bedside-icon">🤝</span>
+              <div>
+                <h4 class="bedside-title">Plain-Language Heart Health Explainer</h4>
+                <div class="bedside-subtitle">What these medical numbers mean for you</div>
+              </div>
+            </div>
+            <div class="bedside-body" id="bedside-body-content">
+              <!-- Populated dynamically with conversational medical explanations -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 5-FOLD STRATIFIED CROSS-VALIDATION METRICS MODAL                          -->
+  <!-- ========================================================================= -->
+  <div id="metrics-modal" class="modal-backdrop hidden">
+    <div class="modal-content" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modal-title">Official 5-Fold Stratified Cross-Validation Audit</h2>
+          <div class="modal-subtitle">UCI Dataset #411 (Z-Alizadeh Sani Extension) — Out-of-Fold Leakage-Proof Performance</div>
+        </div>
+        <button id="btn-close-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Leakage Guarantee Alert -->
+        <div class="audit-leakage-card">
+          <span class="audit-icon">🛡️</span>
+          <div>
+            <strong>MANDATORY REQUIREMENT 1d ZERO TARGET LEAKAGE ENFORCED</strong>
+            <p>All target columns (<code>Cath</code>, <code>LAD</code>, <code>LCX</code>, <code>RCA</code>) were strictly excluded from the feature space prior to cross-validation with automated case-insensitive assertions. Constant column <code>Exertional CP</code> was pruned.</p>
+          </div>
+        </div>
+
+        <!-- Summary Table -->
+        <div class="table-wrapper">
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Target Artery</th>
+                <th>Prevalence</th>
+                <th>ROC-AUC</th>
+                <th>Standard T=0.50 (Acc / Prec / Rec / F1)</th>
+                <th>ER Triage T=0.35 (Acc / Prec / Rec / F1)</th>
+                <th>Confusion Matrix (T=0.35)</th>
+              </tr>
+            </thead>
+            <tbody id="metrics-table-body">
+              <!-- Populated dynamically from evaluation_report.json -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Monotone Constraints Reference -->
+        <div class="monotone-card">
+          <h4>Physiologically Sound Monotone Constraints (XGBoost)</h4>
+          <p>Counterfactual sliders conform strictly to established cardiology physiology: risk increases monotonically with <code>Age, BP, LDL, TG, FBS, Smoker, RWMA, ST-Elevation, ST-Depression, T-Inversion</code> (+1) and decreases monotonically with <code>EF-TTE, HDL</code> (−1).</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-modal-dismiss" class="btn-action-primary">Close Audit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SMART CLINICAL REPORT AUTO-FILLER MODAL                                    -->
+  <!-- ========================================================================= -->
+  <div id="import-report-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog report-modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-tag">NLP BIOMARKER EXTRACTOR</div>
+          <h3 class="modal-title">📥 Smart Clinical Report Auto-Filler</h3>
+          <p class="modal-subtitle">Paste raw EHR consultation notes, emergency triage summaries, or laboratory panel text to auto-populate the 3D Digital Twin.</p>
+        </div>
+        <button id="btn-close-import-modal" class="modal-close-btn" title="Close Modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 1-Click Sample Reports Bar -->
+        <div class="sample-reports-bar">
+          <span class="sample-label">1-Click Sample Reports:</span>
+          <div class="sample-chips">
+            <button type="button" class="sample-chip-btn" data-sample="er">
+              <span class="chip-icon">🚨</span> ER Emergency Patient Note
+            </button>
+            <button type="button" class="sample-chip-btn" data-sample="routine">
+              <span class="chip-icon">📋</span> Routine Annual Lab Report
+            </button>
+            <button type="button" class="sample-chip-btn" data-sample="diabetic">
+              <span class="chip-icon">🩸</span> Diabetic Dyslipidemia Note
+            </button>
+          </div>
+        </div>
+
+        <!-- Raw Textarea Input -->
+        <div class="report-textarea-group">
+          <div class="textarea-header">
+            <label for="report-raw-text" class="textarea-label">CLINICAL TEXT / LAB REPORT</label>
+            <span class="character-count" id="report-char-count">0 characters</span>
+          </div>
+          <textarea id="report-raw-text" class="report-textarea" placeholder="Paste physician notes, ER triage records, or lab values here...
+Example:
+Patient is a 64-year-old male with typical chest pain.
+BP: 155/92 mmHg, Pulse: 88 bpm. Active smoker.
+Labs: FBS 142 mg/dL, LDL 168 mg/dL, HDL 34 mg/dL, TG 215 mg/dL.
+Echo: LVEF 38%, RWMA 3 segments. ECG: ST elevation, T inversion."></textarea>
+        </div>
+
+        <!-- Real-Time Extracted Biomarkers Preview -->
+        <div class="extracted-preview-card">
+          <div class="extracted-header">
+            <div class="extracted-title">
+              <span class="status-dot"></span>
+              <span>Detected Biomarkers &amp; Levers</span>
+            </div>
+            <span class="badge-count" id="detected-biomarkers-count">0 Detected</span>
+          </div>
+          <div class="extracted-chips-container" id="detected-biomarkers-chips">
+            <span class="empty-chips-msg">Type or paste clinical text above to extract variables in real time.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer report-modal-footer">
+        <button id="btn-clear-report-text" class="btn-action-outline">Clear Text</button>
+        <div class="footer-right-actions">
+          <button id="btn-cancel-import-modal" class="btn-action-outline">Cancel</button>
+          <button id="btn-apply-report" class="btn-action-primary" disabled>
+            <span class="btn-icon">⚡</span> Apply to 3D Digital Twin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="libs/three.min.js"></script>
+  <script src="libs/OrbitControls.js"></script>
+  <script src="libs/GLTFLoader.js"></script>
+  <script src="heart3d.js"></script>
+  <script src="reportParser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
